@@ -1,0 +1,98 @@
+---
+title: "Peajes"
+author: "Natalia, Nelson, Luis , Nilson"
+date: "2023-11-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Historico Peajes Colombia Trafico y Recaudo
+
+Fuente: <https://www.kaggle.com/datasets/martinaltamar/historico-peajes-colombia-trafico-y-recaudo>.
+
+Tamaño:
+Filas: 98306
+Columnas: 11
+
+# categoria vs tarifa histo
+# categoria vs evasores pie
+# categoria vs flujo (barras)
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(dslabs)
+library(readr)
+df <- read.csv("peajes_colombia.csv")
+```
+
+## Analisis de una variable
+
+```{r}
+#extraer año y añade una columna 12 con el año
+library(lubridate)
+df$ango <- format(as.Date(df$FechaDesde, format = "%m/%d/%Y"),"%Y")
+
+# Filtro para tener solo las categorias I-V
+data <- filter(df, IdCategoriaTarifa %in% c("I","II","III", "IV", "V"))
+
+#Boxplot
+ggplot(data, aes(x=0, y=ValorTarifa))+
+  geom_boxplot()
+
+#Histograma
+ggplot(data, aes(x=ValorTarifa))+
+  #xlim(0,50000)+
+  geom_histogram() + 
+  facet_wrap(~ IdCategoriaTarifa, nrow = 3)
+```
+
+# Categoria Vs Evasores
+```{r}
+ggplot(data, aes(x=0, y=ValorTarifa))
+
+#data %>% ggplot(aes(x = IdCategoriaTarifa, y = TraficoEvasores)) + 
+#  geom_point()
+
+data %>% ggplot(aes(x = IdCategoriaTarifa, y = TraficoEvasores)) + 
+  geom_boxplot()
+
+data$TraficoEvasores <- as.numeric(data$TraficoEvasores)
+
+
+data %>%
+  select(IdCategoriaTarifa,TraficoEvasores) %>%
+  filter(TraficoEvasores!="NULL")
+
+%>%
+  select(IdCategoriaTarifa,as.numeric(TraficoEvasores)) 
+
+
+%>%
+  group_by(IdCategoriaTarifa)%>%
+  summarise(Total=count(TraficoEvasores))
+
+
+data %>%
+  count(IdCategoriaTarifa)
+
+data %>% ggplot(aes(x = "", y = TraficoEvasores)) + 
+  geom_bar(stat = "identity",width = 1) +
+  coord_polar(theta = "y")+ 
+  facet_wrap(~ IdCategoriaTarifa, nrow = 3)
+
+
+count(df,TraficoEvasores)
+
+```
+
+
+# Categoria Vs Flujo
+```{r}
+ggplot(df, aes(x=0, y=ValorTarifa))+
+
+```
+

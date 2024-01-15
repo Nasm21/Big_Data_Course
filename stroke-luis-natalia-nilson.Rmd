@@ -1,0 +1,53 @@
+---
+title: "STROKE"
+author: "Natalia, Luis , Nilson"
+date: "2023-11-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Brain stroke prediction dataset
+
+Fuente: <https://www.kaggle.com/datasets/zzettrkalpakbal/full-filled-brain-stroke-dataset>.
+
+Tamaño:
+Filas: 5110
+Columnas: 12
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(dslabs)
+library(readr)
+data_acv <- read.csv("healthcare-dataset-stroke-data.csv")
+head(data_acv)
+```
+```{r}
+str(data_acv)
+summary(data_acv)
+```
+
+```{r}
+data_acv2<-data_acv %>%
+  filter(work_type != 'children')
+
+data_acv3<-data_acv2 %>%
+  filter(.data, age)
+```
+
+
+
+```{r}
+numeric_val=data_acv2[, sapply(data_acv2, is.numeric)]
+
+cor_matrix = cor(numeric_val); cor_matrix
+
+library(corrplot)
+corrplot(cor_matrix, method = "number", tl.col = "black")
+
+```
+
