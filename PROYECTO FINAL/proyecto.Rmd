@@ -1,0 +1,341 @@
+---
+title: "The Price and Sales of Avocado"
+author: "Natalia Santamaria, Luis Giron, Nilson Mossos"
+
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Fuente: <= https://www.kaggle.com/datasets/alanluo418/avocado-prices-20152019>.
+Filas: 27323
+Columnas: 13
+
+
+```{r}
+#Librerías
+library(dplyr)
+library(readr)
+library(ggthemes)
+library(ggplot2)
+library(cowplot)
+library(forcats)
+library(dslabs)
+library(corrplot)
+library(nortest)
+
+#Carga de la base de datos
+data_avo <- read.csv("avocado.csv")
+
+#Exploración inicial
+head(data_avo)
+```
+#Información de Atributos
+
+```{r}
+#Información Inicial de la base de datos
+str(data_avo)
+```
+
+```{r}
+#Resumen estadístico de la base de datos
+summary(data_avo)
+
+data_avo$calculada_Venta= data_avo$AveragePrice*data_avo$Total.Volume
+
+max(data_avo$Total.Bags)
+```
+
+
+```{r}
+#Matriz de Correlación
+
+numeric_val=data_avo[, sapply(data_avo, is.numeric)]
+cor_matrix = cor(numeric_val); cor_matrix
+corrplot(cor_matrix, method = "number", tl.col = "black")
+
+```
+
+#Clasificación de los aguacates 
+
+```{r}
+#ANÁLISIS EXPLORATORIO
+
+#Diagrama de barras por tipo de aguacate
+data_avo %>%
+  count(type) %>%
+  mutate(proportion = n) %>%
+  ggplot(aes(type, proportion,fill = type)) + 
+  ggtitle("Diagrama de barras ")+
+  geom_bar(stat = "identity")+
+  geom_text(aes(label= proportion), color="black",  #
+            position=position_dodge(0.9), 
+            vjust=1.6, 
+            size=4.0
+  ) + 
+  facet_wrap(~"Variable tipo de aguacate") +
+  geom_smooth()
+```
+
+
+```{r}
+#Análisis de volumen por año
+data_avo %>%
+  select(Total.Volume,year) %>%
+  filter(year %in% c("2015","2016","2017","2018","2019")) %>%
+  group_by(year) %>%
+  summarise(sum(Total.Volume)) %>%
+  ggplot(aes(year, `sum(Total.Volume)` ,fill = year)) + 
+  ggtitle("Analisis De Volumen Por Año ")+
+  geom_bar(stat = "identity")+
+  geom_text(aes(label= `sum(Total.Volume)`), color="white",  #
+            position=position_dodge(0.9), 
+            vjust=3, 
+            size=3.0
+  ) + 
+  facet_wrap(~"Historico de volumen por año") +
+  geom_smooth()
+
+
+
+
+```
+
+```{r}
+#Análisis de precio promedio por año
+data_avo %>%
+  select(AveragePrice,year) %>%
+  filter(year %in% c("2015","2016","2017","2018","2019"))%>%
+  group_by(year) %>%
+  summarise(round(mean(AveragePrice),2)) %>%
+  ggplot(aes(year, `round(mean(AveragePrice), 2)` ,fill = year)) + 
+  ggtitle("Analisis De Precio promedio Por Año ")+
+  geom_bar(stat = "identity")+
+  geom_text(aes(label= `round(mean(AveragePrice), 2)`), color="white",  #
+            position=position_dodge(0.9), 
+            vjust=1.6, 
+            size=8.0
+  ) + 
+  facet_wrap(~"Historico de Precio Promedio por año") +
+  geom_smooth()
+
+```
+
+```{r}
+# Correlación de precio promedio / volumen vendido
+data_avo %>% 
+  ggplot(aes(x =AveragePrice , y = Total.Volume/10^5 )) + #valor en cientos de miles
+  geom_point()+
+  xlab(" Precio promedio por aguacate") + 
+  ylab("Cantidad / Volumen de aguacates comprados del 2015 - 2019 ") +
+  ggtitle("Relacion Precio/ Volumen")
+```
+
+```{r}
+# Histórico de bolsas pequeñas vendidas por año
+data_avo %>%
+  select(Small.Bags,year) %>%
+  filter(year %in% c("2015","2016","2017","2018","2019")) %>%
+  group_by(year) %>%
+  summarise(sum(Small.Bags))%>%
+  ggplot(aes(year, `sum(Small.Bags)` ,fill = year)) + 
+  geom_bar(stat = "identity")+
+  geom_text(aes(label= `sum(Small.Bags)`), color="orange",  #
+            position=position_dodge(0.9), 
+            vjust=1.6, 
+            size=4.0
+  ) + 
+  facet_wrap(~"HISTORICO BOLSAS PEQUEÑAS VENDIDAS / AÑO") +
+  coord_flip()
+```
+```{r}
+# Histórico de bolsas grandes vendidas por año
+
+data_avo %>%
+  select(Large.Bags,year) %>%
+  filter(year %in% c("2015","2016","2017","2018","2019")) %>%
+  group_by(year) %>%
+  summarise(sum(Large.Bags))%>%
+  ggplot(aes(year, `sum(Large.Bags)` ,fill = year)) + 
+  geom_bar(stat = "identity")+
+  geom_text(aes(label= `sum(Large.Bags)`), color="orange",  #
+            position=position_dodge(0.9), 
+            vjust=1.6, 
+            size=4.0
+  ) + 
+  facet_wrap(~"HISTORICO BOLSAS GRANDES VENDIDAS / AÑO") +
+  coord_flip()
+```
+
+```{r}
+# historico de bolsas extragrandes vendidas por año
+
+data_avo %>%
+  select(XLarge.Bags,year) %>%
+  filter(year %in% c("2015","2016","2017","2018","2019")) %>%
+  group_by(year) %>%
+  summarise(sum(XLarge.Bags))%>%
+  ggplot(aes(year, `sum(XLarge.Bags)` ,fill = year)) + 
+  geom_bar(stat = "identity")+
+  geom_text(aes(label= `sum(XLarge.Bags)`), color="orange",  #
+            position=position_dodge(0.9), 
+            vjust=1.6, 
+            size=4.0
+  ) + 
+  facet_wrap(~"HISTORICO BOLSAS EXTRAGRANDES VENDIDAS / AÑO") +
+  coord_flip()
+```
+
+```{r}
+#Coeficiente de correlación de Pearson 
+data_avo<-data_avo %>% select(-Date)
+
+data_avo<-data_avo %>% filter(data_avo$region!="TotalUS",data_avo$region!="Total U.S.",data_avo$Total.Volume<=24000000, data_avo$Total.Volume>=100)
+#data_avo$region=="Boston"
+
+data_avo %>%
+  group_by(region) %>%
+  summarise(cor((log10(Total.Volume/10^6)),
+                log10(calculada_Venta),
+                method = "pearson"))
+```
+
+```{r}
+#Modelo de Regresión Lineal
+#data_avo<-data_avo %>% filter(data_avo$region=="Albany",data_avo$Total.Volume<=5630, data_avo$Total.Volume>=2000 )
+
+modeloah <- data_avo %>%
+  lm(log10(calculada_Venta) ~ log10((Total.Volume/10^6)),data= .)    
+
+summary <- summary(modeloah);summary
+
+```
+```{r}
+modeloah$coefficients
+
+##Coeficientes
+Pendiente <- modeloah$coefficients[2];
+Intercepto <- modeloah$coefficients[1];
+Pendiente
+Intercepto
+```
+```{r}
+# ¿Cómo interpretar los coeficientes?
+# ¿El modelo es significativo?
+# ¿Cómo es el ajuste del modelo?
+
+data_avo %>%
+  ggplot(aes(x = log10(Total.Volume/10^6),
+             y = log10(calculada_Venta))) + 
+  geom_point(show.legend = FALSE)+
+  xlab("volumen in millions (log scale)") + 
+  ylab("Total venta de aguacates (log scale)") +
+  ggtitle("cantidades vendidas todos los estados 2015-2019") + 
+  geom_smooth(method = "lm", se = FALSE, color = "red") + 
+  theme_light() +
+  geom_text(aes(label = paste("y =", 
+                              round(Pendiente, 2), 
+                              "x +", 
+                              round(Intercepto, 2)),
+                x = -2, y = 3.1),color = "green",size = 8) 
+```
+
+
+```{r}
+#Examen de residuales
+
+ei=residuals(modeloah);ei 
+#muestra la discrepancia entre los valores predichos y los valores observados 
+#reales. Un residuo positivo indica que la observación es mayor que la 
+#predicción, mientras que un residuo negativo indica lo contrario.
+```
+
+```{r}
+pred=fitted(modeloah);pred #muestra qué valores predice 
+#el modelo para cada observación
+```
+```{r}
+#data_avo<-data_avo %>% filter(data_avo$region=="Albany",data_avo$Total.Volume<=7567)
+
+realah1 = data_avo %>%
+  summarize(y=log10(calculada_Venta),x=log10((Total.Volume/10^6))) %>%
+  arrange(x);realah1
+
+realah = data_avo %>%
+  summarize(y=calculada_Venta,x=Total.Volume/10^6) %>%
+  arrange(x);realah
+```
+```{r}
+#Validación del modelo
+
+#1.Los errores tienen media de cero
+#Hipótesis:
+#Ho = Los errores tienen media de cero
+#Ha = Los errores NO tienen media de cero
+#----------------------------------------
+#Prueba t para la media de ei
+
+t.test(ei)
+#el p-valor es mayor que el nivel de significancia 0.05, 
+#no se rechaza la hipótesis nula
+```
+```{r}
+qplot(pred,ei,xlab = "Valores ajustados",
+      ylab = "Residuales",ylim = c(-1,1))
+#QQplot es una herramienta gráfica utilizada para evaluar si una 
+#muestra de datos se distribuye de manera aproximada a una 
+#distribución teórica específica, como la distribución 
+#normal.
+```
+```{r}
+#2. Los errores son normales
+#Hipótesis
+#Ho = Los errores se distribuyen de forma normal
+#Ha = Los errores NO se distribuyen de forma normal
+
+ggplot() +
+  geom_qq(aes(sample = ei)) +
+  geom_abline(intercept = mean(ei), slope = sd(ei), 
+              color = "red", linetype = "dashed") +
+  labs(title = "QQ Plot de Residuos", 
+       x = "Cuantiles teóricos", y = "Cuantiles observados")
+```
+```{r}
+#n>=30, por lo que se usa la Prueba de Anderson Darling
+ad.test(ei)
+```
+```{r}
+#3.Los errores son homocedásticos, la homocedasticidad sugiere 
+#que la variabilidad de los errores es aproximadamente 
+#constante en todos los niveles de la variable independiente.
+
+#Hipótesis
+#Ho = Los errores son homocedásticos
+#Ha = Los errores NO son homocedásticos
+
+# Prueba de Breusch Pagan 
+# Varianza es constante
+
+library(lmtest)
+bptest(modeloah)
+```
+```{r}
+#Prueba de Durbin Watson
+dwtest(modeloah,alternative = "two.sided") #greater o less
+```
+```{r}
+pred1 <- predict(object = modeloah, 
+                 newdata = data.frame(Total.Volume=	4044.000))
+
+total_pred=(10^(pred1));round(total_pred,0)
+
+```
+
+
+
+
+
+
+
+
