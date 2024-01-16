@@ -1,0 +1,96 @@
+---
+title: "NHANES"
+author: "NILSON MOSOS, NELSON SANCLEMENTE, LUIS GIRON, NATALIA SANTAMARIA"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(NHANES)
+data(NHANES)
+
+```
+
+#PUNTO 1
+# Utilizaremos mujeres de 20 a 29 años. "AgeDecade" es una variable categórica con estas edades.
+# Cuál es el promedio y la desviación estándar de la presión arterial sistólica.
+```{r}
+ref <- NHANES %>%
+  filter(AgeDecade == ' 20-29', Gender == 'female') %>%
+  select(AgeDecade,BPSysAve) %>%
+  summarise(mean(BPSysAve, na.rm = TRUE), sd(BPSysAve,na.rm = TRUE)) 
+  
+ref
+```
+
+#PUNTO 2
+#Utilizando el operador pipe , asignar el promedio a una variable numérica llamada "ref_avg"
+```{r}
+ref_avg<- ref %>%
+  pull(1)
+ref_avg
+
+```
+
+#PUNTO 3
+#Informar los valores máximos y mínimos para el mismo grupo.
+```{r}
+ref2 <- NHANES %>%
+  filter(AgeDecade == ' 20-29', Gender == 'female') %>%
+  select(AgeDecade,BPSysAve) %>%
+  summarise(min(BPSysAve, na.rm = TRUE), max(BPSysAve,na.rm = TRUE)) 
+
+ref2
+```
+
+#PUNTO 4
+# Calcula el promedio y la desviación estándar para las mujeres, pero para cada grupo 
+# de edad por separado 
+```{r}
+NHANES %>%
+  filter(Gender == 'female')%>%
+  select(AgeDecade,BPSysAve) %>%
+  group_by(AgeDecade)%>%
+  summarise(mean(BPSysAve, na.rm = TRUE), sd(BPSysAve,na.rm = TRUE))
+
+```
+
+#PUNTO 5
+# Calcula el promedio y la desviación estándar para los hombres, pero para cada grupo 
+# de edad por separado 
+```{r}
+NHANES %>%
+  filter(Gender == 'male')%>%
+  select(AgeDecade,BPSysAve) %>%
+  group_by(AgeDecade)%>%
+  summarise(mean(BPSysAve, na.rm = TRUE), sd(BPSysAve,na.rm = TRUE))
+```
+#PUNTO 6
+# Combinar los summarise del ejercicio 4 y 5
+```{r}
+NHANES %>%
+  select(AgeDecade,BPSysAve,Gender) %>%
+  group_by(AgeDecade,Gender)%>%
+  summarise(mean(BPSysAve, na.rm = TRUE), sd(BPSysAve,na.rm = TRUE))
+```
+
+
+#PUNTO 7
+# Para los hombres entre las edades 40-49, compara la presión arterial sistólica según la raza reportada.
+```{r}
+NHANES %>%
+  filter(AgeDecade == ' 40-49', Gender == 'male') %>%
+  select(AgeDecade,BPSysAve,Race1) %>%
+  group_by(Race1)%>%
+  summarise(promedio=mean(BPSysAve, na.rm = TRUE)) %>%
+  arrange(promedio)
+```
+
